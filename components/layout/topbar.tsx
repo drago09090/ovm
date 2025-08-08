@@ -28,6 +28,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Bell, Menu, LogOut, User, Settings, HelpCircle, Search, X } from 'lucide-react'
 import { Input } from "@/components/ui/input"
+import { useAuth } from "@/contexts/auth-context"
 import { cn } from "@/lib/utils"
 import { useToast } from "@/components/ui/use-toast"
 import type { UserRole } from "@/components/dashboard"
@@ -105,6 +106,7 @@ export function Topbar({ userRole, sidebarCollapsed, setSidebarCollapsed, onNavi
   const [helpOpen, setHelpOpen] = useState(false)
   const [profileOpen, setProfileOpen] = useState(false)
   const [notificationList, setNotificationList] = useState(notifications)
+  const { user, logout } = useAuth()
   const { toast } = useToast()
 
   const unreadCount = notificationList.filter(n => !n.read).length
@@ -128,7 +130,9 @@ export function Topbar({ userRole, sidebarCollapsed, setSidebarCollapsed, onNavi
       title: "Cerrando sesión",
       description: "Redirigiendo al login..."
     })
-    // Here you would handle actual logout
+    setTimeout(() => {
+      logout()
+    }, 1000)
   }
 
   const handleProfileSettings = () => {
@@ -226,7 +230,7 @@ export function Topbar({ userRole, sidebarCollapsed, setSidebarCollapsed, onNavi
             {/* User Menu */}
             <div className="flex items-center space-x-3">
               <div className="hidden md:block text-right">
-                <p className="text-sm font-medium text-gray-900">Juan Pérez</p>
+                <p className="text-sm font-medium text-gray-900">{user?.name || "Usuario"}</p>
                 <Badge className={cn("text-xs", roleColors[userRole])}>
                   {roleLabels[userRole]}
                 </Badge>
@@ -244,8 +248,8 @@ export function Topbar({ userRole, sidebarCollapsed, setSidebarCollapsed, onNavi
                 <DropdownMenuContent className="w-56" align="end" forceMount>
                   <DropdownMenuLabel className="font-normal">
                     <div className="flex flex-col space-y-1">
-                      <p className="text-sm font-medium leading-none">Juan Pérez</p>
-                      <p className="text-xs leading-none text-muted-foreground">juan@omv.com</p>
+                      <p className="text-sm font-medium leading-none">{user?.name || "Usuario"}</p>
+                      <p className="text-xs leading-none text-muted-foreground">{user?.email || "usuario@omv.com"}</p>
                       <Badge className={cn("text-xs w-fit mt-1", roleColors[userRole])}>
                         {roleLabels[userRole]}
                       </Badge>
@@ -380,11 +384,13 @@ export function Topbar({ userRole, sidebarCollapsed, setSidebarCollapsed, onNavi
             <div className="flex items-center space-x-4">
               <Avatar className="h-16 w-16">
                 <AvatarImage src="/placeholder-user.jpg" alt="Usuario" />
-                <AvatarFallback className="bg-blue-100 text-blue-600 text-xl">JP</AvatarFallback>
+                <AvatarFallback className="bg-blue-100 text-blue-600 text-xl">
+                  {user?.name?.split(' ').map(n => n[0]).join('').toUpperCase() || "U"}
+                </AvatarFallback>
               </Avatar>
               <div>
-                <h3 className="text-lg font-semibold">Juan Pérez</h3>
-                <p className="text-gray-600">juan@omv.com</p>
+                <h3 className="text-lg font-semibold">{user?.name || "Usuario"}</h3>
+                <p className="text-gray-600">{user?.email || "usuario@omv.com"}</p>
                 <Badge className={cn("text-xs mt-1", roleColors[userRole])}>
                   {roleLabels[userRole]}
                 </Badge>

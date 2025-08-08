@@ -3,6 +3,7 @@
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
+import { usePermissions } from "@/hooks/use-permissions"
 import { LayoutDashboard, Users, CreditCard, UserCheck, Ticket, Wallet, BarChart3, Settings, ChevronLeft, ChevronRight, Zap, RefreshCw, Package, Phone, Warehouse, Receipt, DollarSign, FileText, Building2, Webhook } from 'lucide-react'
 import type { UserRole, ActiveView } from "@/components/dashboard"
 
@@ -79,7 +80,17 @@ const menuSections: MenuSection[] = [
 ]
 
 export function Sidebar({ activeView, setActiveView, userRole, collapsed, setCollapsed }: SidebarProps) {
-  const hasAccessToItem = (itemRoles: UserRole[]) => itemRoles.includes(userRole)
+  const { canAccessModule } = usePermissions()
+  
+  const hasAccessToItem = (itemRoles: UserRole[], moduleId?: string) => {
+    // Check role-based access
+    const hasRoleAccess = itemRoles.includes(userRole)
+    
+    // Check permission-based access if module is specified
+    const hasModuleAccess = moduleId ? canAccessModule(moduleId) : true
+    
+    return hasRoleAccess && hasModuleAccess
+  }
 
   return (
     <div
@@ -112,7 +123,7 @@ export function Sidebar({ activeView, setActiveView, userRole, collapsed, setCol
       <nav className="flex-1 p-3 overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
         <div className="space-y-6">
           {menuSections.map((section, sectionIndex) => {
-            const visibleItems = section.items.filter(item => hasAccessToItem(item.roles))
+            const visibleItems = section.items.filter(item => hasAccessToItem(item.roles, item.id))
             
             if (visibleItems.length === 0) return null
 
